@@ -3,6 +3,8 @@ package location
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+
+	"employee-management/infra/middleware"
 )
 
 func Init(router fiber.Router, db *sqlx.DB) {
@@ -11,9 +13,9 @@ func Init(router fiber.Router, db *sqlx.DB) {
 	handler := newHandler(svc)
 
 	location := router.Group("/locations")
-	location.Post("/", handler.CreateLocation)
-	location.Get("/", handler.GetAllLocations)
-	location.Get("/:id", handler.GetLocationByID)
-	location.Put("/:id", handler.UpdateLocation)
-	location.Delete("/:id", handler.DeleteLocation)
+	location.Post("/", middleware.AuthMiddleware(), handler.CreateLocation)
+	location.Get("/", middleware.AuthMiddleware(), handler.GetAllLocations)
+	location.Get("/:id", middleware.AuthMiddleware(), handler.GetLocationByID)
+	location.Put("/:id", middleware.AuthMiddleware(), handler.UpdateLocation)
+	location.Delete("/:id", middleware.AuthMiddleware(), handler.DeleteLocation)
 }

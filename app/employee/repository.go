@@ -15,9 +15,20 @@ func newRepository(db *sqlx.DB) (repo repository) {
 	return repository{db: db}
 }
 
+func (r *repository) GetEmployeeByCode(ctx context.Context, code string) (Employee, error) {
+	var emp Employee
+	query := `SELECT * FROM employees WHERE employee_code = $1 AND deleted_at IS NULL`
+	err := r.db.GetContext(ctx, &emp, query, code)
+	if err != nil {
+		return emp, err
+	}
+	return emp, nil
+}
+
 func (r *repository) CreateEmployee(ctx context.Context, emp Employee) error {
 	query := `INSERT INTO employees (employee_code, employee_name, password, department_id, position_id, superior, created_at, created_by, updated_at, updated_by) 
 	          VALUES (:employee_code, :employee_name, :password, :department_id, :position_id, :superior, :created_at, :created_by, :updated_at, :updated_by)`
+
 	_, err := r.db.NamedExecContext(ctx, query, map[string]interface{}{
 		"employee_code": emp.EmployeeCode,
 		"employee_name": emp.EmployeeName,

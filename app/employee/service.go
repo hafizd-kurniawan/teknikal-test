@@ -2,6 +2,7 @@ package employee
 
 import (
 	"context"
+	"errors"
 )
 
 type IRepository interface {
@@ -10,19 +11,7 @@ type IRepository interface {
 	GetAllEmployees(ctx context.Context) ([]Employee, error)
 	UpdateEmployee(ctx context.Context, employee Employee) error
 	DeleteEmployee(ctx context.Context, id int) error
-	// Login(ctx context.Context, email, password string) (Employee, error)
-	// ForgotPassword(ctx context.Context, email string) error
-	// GetEmployeeByNameAndDeptIdAndPositionId()
-	// GetEmployeeByCode()
-	// GetEmployeeByName()
-	// GetEmployeeById()
-	// GetAllEmployee()
-	// ForgotPass()
-	// Register()
-	// Delete()
-	// Insert(ctx context.Context, model EmployeeEntity) (err error)
-	// Update()
-	// Login(ctx context.Context, model EmployeeEntity) (err error)
+	GetEmployeeByCode(ctx context.Context, code string) (Employee, error)
 }
 
 type service struct {
@@ -38,11 +27,24 @@ func (s *service) CreateEmployee(ctx context.Context, req CreateEmployeeRequest)
 	if err := emp.Validate(); err != nil {
 		return err
 	}
+
+	if err := emp.EncryptPassword(); err != nil {
+		return err
+	}
+	if _, err := s.repo.GetEmployeeByCode(ctx, req.EmployeeCode); err == nil {
+		return errors.New("duplicate data")
+	}
+
 	return s.repo.CreateEmployee(ctx, emp)
 }
 
 func (s *service) UpdateEmployee(ctx context.Context, req UpdateEmployeeRequest) error {
 	emp := NewUpdateRequest(req)
+
+	if err := emp.EncryptPassword(); err != nil {
+		return err
+	}
+
 	return s.repo.UpdateEmployee(ctx, emp)
 }
 
@@ -56,4 +58,23 @@ func (s *service) GetAllEmployees(ctx context.Context) ([]Employee, error) {
 
 func (s *service) DeleteEmployee(ctx context.Context, id int) error {
 	return s.repo.DeleteEmployee(ctx, id)
+}
+
+func (s *service) Login(ctx context.Context, code, password string) (string, error) {
+	var token string
+	employee, err := s.repo.GetEmployeeByCode(ctx, code)
+	if err != nil {
+		return "", err
+	}
+
+	if err := employee.ValidatePasswordFromPlainText(password, employee.Password); err != nil {
+		return "", err
+	}
+
+	token, err = employee.GenerateAccessToken()
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
+	"employee-management/app/attendacne"
 	"employee-management/app/departement"
 	"employee-management/app/employee"
 	"employee-management/app/location"
@@ -36,6 +37,7 @@ func main() {
 		panic(err)
 	}
 
+	attendacne.Init(app, db)
 	departement.Init(app, db)
 	position.Init(app, db)
 	location.Init(app, db)

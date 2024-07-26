@@ -3,6 +3,8 @@ package employee
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+
+	"employee-management/infra/middleware"
 )
 
 func Init(router fiber.Router, db *sqlx.DB) {
@@ -14,10 +16,12 @@ func Init(router fiber.Router, db *sqlx.DB) {
 
 	{
 		employee := router.Group("/employees")
+		employee.Post("/login", handler.Login)
 		employee.Post("/", handler.CreateEmployee)
-		employee.Get("/", handler.GetAllEmployees)
-		employee.Get("/:id", handler.GetEmployeeByID)
-		employee.Put("/:id", handler.UpdateEmployee)
-		employee.Delete("/:id", handler.DeleteEmployee)
+		employee.Get("/", middleware.AuthMiddleware(), handler.GetAllEmployees)
+		employee.Get("/:id", middleware.AuthMiddleware(), handler.GetEmployeeByID)
+		employee.Put("/:id", middleware.AuthMiddleware(), handler.UpdateEmployee)
+		employee.Delete("/:id", middleware.AuthMiddleware(), handler.DeleteEmployee)
+
 	}
 }

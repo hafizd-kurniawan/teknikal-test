@@ -3,6 +3,8 @@ package departement
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+
+	"employee-management/infra/middleware"
 )
 
 func Init(router fiber.Router, db *sqlx.DB) {
@@ -13,11 +15,11 @@ func Init(router fiber.Router, db *sqlx.DB) {
 	department := router.Group("/departments")
 	{
 
-		department.Post("/", handler.CreateDepartment)
-		department.Get("/", handler.GetAllDepartments)
-		department.Get("/:id", handler.GetDepartmentByID)
-		department.Put("/:id", handler.UpdateDepartment)
-		department.Delete("/:id", handler.DeleteDepartment)
+		department.Post("/",middleware.AuthMiddleware(), handler.CreateDepartment)
+		department.Get("/",middleware.AuthMiddleware(), handler.GetAllDepartments)
+		department.Get("/:id",middleware.AuthMiddleware(), handler.GetDepartmentByID)
+		department.Put("/:id",middleware.AuthMiddleware(), handler.UpdateDepartment)
+		department.Delete("/:id", middleware.AuthMiddleware(), handler.DeleteDepartment)
 	}
 
 }

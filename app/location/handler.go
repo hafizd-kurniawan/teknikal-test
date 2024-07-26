@@ -19,8 +19,13 @@ func (h *handler) CreateLocation(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	req.CreatedBy = "system" // replace with actual user
-	// req.CreatedAt = time.Now()
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+
+	req.CreatedBy = user
 
 	if err := h.service.CreateLocation(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -58,9 +63,14 @@ func (h *handler) UpdateLocation(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+
 	req.LocationId = id
-	req.UpdatedBy = "system" // replace with actual user
-	// req.UpdatedAt = time.Now()
+	req.UpdatedBy = user
 
 	if err := h.service.UpdateLocation(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

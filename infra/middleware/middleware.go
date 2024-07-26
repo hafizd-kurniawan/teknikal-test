@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,11 +18,14 @@ func AuthMiddleware() fiber.Handler {
 			return WriteError(ctx, err)
 		}
 
-		id := claims.EmployeeId
+		id := claims.EmployeeID
 		employeeCode := claims.EmployeeCode
+		employeeName := claims.EmployeeName
 
-		ctx.Locals("id", id)
-		ctx.Locals("email", employeeCode)
+		fmt.Println(employeeName)
+		ctx.Locals("employee_id", id)
+		ctx.Locals("employee_code", employeeCode)
+		ctx.Locals("employee_name", employeeName)
 
 		return ctx.Next()
 	}

@@ -3,6 +3,8 @@ package attendacne
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+
+	"employee-management/infra/middleware"
 )
 
 func Init(router fiber.Router, db *sqlx.DB) {
@@ -11,9 +13,10 @@ func Init(router fiber.Router, db *sqlx.DB) {
 	handler := newHandler(svc)
 
 	attendance := router.Group("/attendances")
-	attendance.Post("/", handler.CreateAttendance)
-	attendance.Get("/", handler.GetAllAttendances)
-	attendance.Get("/:id", handler.GetAttendanceByID)
-	attendance.Put("/:id", handler.UpdateAttendance)
-	attendance.Delete("/:id", handler.DeleteAttendance)
+	attendance.Post("/", middleware.AuthMiddleware(), handler.CreateAttendance)
+	attendance.Get("/", middleware.AuthMiddleware(), handler.GetAllAttendances)
+	attendance.Get("/:id", middleware.AuthMiddleware(), handler.GetAttendanceByID)
+	attendance.Put("/:id", middleware.AuthMiddleware(), handler.UpdateAttendance)
+	attendance.Put("/", middleware.AuthMiddleware(), handler.UpdateCheckoutAttendance)
+	attendance.Delete("/:id", middleware.AuthMiddleware(), handler.DeleteAttendance)
 }

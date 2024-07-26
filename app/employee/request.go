@@ -21,8 +21,8 @@ package employee
 // }
 
 type LoginRequest struct {
-	EmployeeCode string `json:"employee_code" validate:"required"`
-	Password     string `json:"password" validate:"required"`
+	EmployeeCode string `json:"employee_code"`
+	Password     string `json:"password"`
 }
 
 type CreateEmployeeRequest struct {

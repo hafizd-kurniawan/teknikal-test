@@ -19,8 +19,11 @@ func (h *handler) CreateAttendance(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	req.CreatedBy = "system" // replace with actual user
-	// req.CreatedAt = time.Now()
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+	req.CreatedBy = user
 
 	if err := h.service.CreateAttendance(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -58,11 +61,36 @@ func (h *handler) UpdateAttendance(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	req.ID = id
-	req.UpdatedBy = "system" // replace with actual user
-	// req.UpdatedAt = time.Now()
+	req.AttendanceID = id
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+	req.UpdatedBy = user
 
 	if err := h.service.UpdateAttendance(context.Background(), req); err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(fiber.Map{"message": "Attendance updated successfully"})
+}
+
+func (h *handler) UpdateCheckoutAttendance(c *fiber.Ctx) error {
+	employeeID := c.Locals("employee_id").(int)
+
+	req := UpdateAttendanceRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+	req.EmployeeID = employeeID
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+	req.UpdatedBy = user
+
+	if err := h.service.Checkout(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(fiber.Map{"message": "Attendance updated successfully"})

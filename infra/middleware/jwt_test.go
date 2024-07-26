@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 
 func TestGenerateNewJWT(t *testing.T) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
-		EmployeeId:   10,
+		EmployeeID:   10,
 		EmployeeCode: "abcxx",
 	})
 	signedToken, err := token.SignedString([]byte(jwtSecret.Secret))
@@ -43,7 +43,7 @@ func TestGetJwtClaims(t *testing.T) {
 	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
-		EmployeeId:   10,
+		EmployeeID:   10,
 		EmployeeCode: "abcxx",
 	})
 	signedToken, err := token.SignedString([]byte(jwtSecret.Secret))
@@ -58,6 +58,6 @@ func TestGetJwtClaims(t *testing.T) {
 	ctx.Locals("id", id)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, claims.EmployeeId)
+	require.NotEmpty(t, claims.EmployeeID)
 	require.NotEqual(t, "", claims.EmployeeCode)
 }

@@ -2,6 +2,7 @@ package employee
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,13 +18,32 @@ func newHandler(service service) handler {
 	}
 }
 
+func (h *handler) Login(c *fiber.Ctx) error {
+	req := LoginRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse request"})
+	}
+
+	token, err := h.service.Login(context.Background(), req.EmployeeCode, req.Password)
+	fmt.Println("token: ", token)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot login"})
+	}
+
+	return c.JSON(fiber.Map{"token": token})
+}
+
 func (h *handler) CreateEmployee(c *fiber.Ctx) error {
 	req := CreateEmployeeRequest{}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	req.CreatedBy = "system" // replace with actual user
-	// req.CreatedAt = time.Now()
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+
+	req.CreatedBy = user
 
 	if err := h.service.CreateEmployee(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -62,8 +82,12 @@ func (h *handler) UpdateEmployee(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 	req.EmployeeID = id
-	req.UpdatedBy = "system" // replace with actual user
-	// req.UpdatedAt = time.Now()
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+
+	req.UpdatedBy = user
 
 	if err := h.service.UpdateEmployee(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

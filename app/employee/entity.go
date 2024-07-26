@@ -86,16 +86,22 @@ func (e *Employee) EncryptPassword() error {
 	return nil
 }
 
-func (e Employee) ValidatePasswordFromPlainText(password, hash string) bool {
+func (e Employee) ValidatePasswordFromPlainText(password, hash string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (e Employee) GenerateAccessToken(accessToken string) (token string, err error) {
+func (e Employee) GenerateAccessToken() (token string, err error) {
+	// token, err = middleware.GenereateJWT2(e.EmployeeName)
 	token, err = middleware.GenerateNewJWT(&middleware.Claims{
-		EmployeeId:   e.EmployeeId,
+		EmployeeID:   e.EmployeeId,
 		EmployeeCode: e.EmployeeCode,
+		EmployeeName: e.EmployeeName,
 	})
+
 	if err != nil {
 		return "", err
 	}

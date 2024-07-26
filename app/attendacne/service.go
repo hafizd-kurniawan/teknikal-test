@@ -12,6 +12,7 @@ type IAttendanceRepository interface {
 	UpdateAttendance(ctx context.Context, attendance Attendance) error
 	DeleteAttendance(ctx context.Context, id int) error
 	GetAttendanceReport(ctx context.Context, startTime, endTime time.Time) ([]AttendanceReport, error)
+	UpdateCheckoutAttendance(ctx context.Context, attendance Attendance) error
 }
 
 type service struct {
@@ -22,18 +23,25 @@ func newService(repo IAttendanceRepository) service {
 	return service{repo: repo}
 }
 func (s *service) CreateAttendance(ctx context.Context, req CreateAttendanceRequest) error {
-	att := Attendance{
-		EmployeeID: req.EmployeeID,
-		LocationID: req.LocationID,
-		AbsentIn:   req.AbsentIn,
-		AbsentOut:  req.AbsentOut,
-		CreatedAt:  time.Now(),
-		CreatedBy:  req.CreatedBy,
-		UpdatedAt:  time.Now(),
-		UpdatedBy:  req.CreatedBy,
+	att := NewAttendance(req)
+
+	if err := att.Validate(); err != nil {
+		return err
 	}
 
 	return s.repo.CreateAttendance(ctx, att)
+}
+
+func (s *service) Checkout(ctx context.Context, req UpdateAttendanceRequest) error {
+	att, err := s.repo.GetAttendanceByID(ctx, req.AttendanceID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdateCheckoutAttendance(ctx, att); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *service) GetAttendanceByID(ctx context.Context, id int) (Attendance, error) {
@@ -45,14 +53,9 @@ func (s *service) GetAllAttendances(ctx context.Context) ([]Attendance, error) {
 }
 
 func (s *service) UpdateAttendance(ctx context.Context, req UpdateAttendanceRequest) error {
-	att := Attendance{
-		ID:         req.ID,
-		EmployeeID: req.EmployeeID,
-		LocationID: req.LocationID,
-		AbsentIn:   req.AbsentIn,
-		AbsentOut:  req.AbsentOut,
-		UpdatedBy:  req.UpdatedBy,
-		UpdatedAt:  time.Now(),
+	att := NewUpdateAttendance(req)
+	if err := att.Validate(); err != nil {
+		return err
 	}
 
 	return s.repo.UpdateAttendance(ctx, att)

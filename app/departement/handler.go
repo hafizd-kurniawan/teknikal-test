@@ -19,7 +19,12 @@ func (h *handler) CreateDepartment(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	req.CreatedBy = "system" // replace with actual user
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+	req.CreatedBy = user
 
 	if err := h.svc.CreateDepartment(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -58,7 +63,12 @@ func (h *handler) UpdateDepartment(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 	req.DepartmentID = id
-	req.UpdatedBy = "system" // replace with actual user
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+	req.UpdatedBy = user
 
 	if err := h.svc.UpdateDepartment(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

@@ -13,17 +13,15 @@ type AttendanceReport struct {
 	AbsentOut      time.Time `json:"absent_out"`
 }
 type CreateAttendanceRequest struct {
-	EmployeeID int       `json:"employee_id" validate:"required"` // Employee ID
-	LocationID int       `json:"location_id" validate:"required"` // Location ID
-	AbsentIn   time.Time `json:"absent_in" validate:"required"`   // Time of absence start
-	AbsentOut  time.Time `json:"absent_out" validate:"required"`  // Time of absence end
-	CreatedBy  string    `json:"created_by" validate:"required"`  // User who created the record
+	EmployeeID int    `json:"employee_id" validate:"required"`
+	LocationID int    `json:"location_id" validate:"required"`
+	CreatedBy  string `json:"created_by" validate:"required"`
 }
 type UpdateAttendanceRequest struct {
-	ID         int       `json:"id" validate:"required"`          // Attendance ID
-	EmployeeID int       `json:"employee_id" validate:"required"` // Employee ID
-	LocationID int       `json:"location_id" validate:"required"` // Location ID
-	AbsentIn   time.Time `json:"absent_in" validate:"required"`   // Time of absence start
-	AbsentOut  time.Time `json:"absent_out" validate:"required"`  // Time of absence end
-	UpdatedBy  string    `json:"updated_by" validate:"required"`  // User who updated the record
+	AttendanceID int       `json:"id" validate:"required"`
+	EmployeeID   int       `json:"employee_id" validate:"required"`
+	LocationID   int       `json:"location_id" validate:"required"`
+	AbsentIn     time.Time `json:"absent_in" validate:"required"`
+	AbsentOut    time.Time `json:"absent_out" validate:"required"`
+	UpdatedBy    string    `json:"updated_by" validate:"required"`
 }

@@ -19,8 +19,12 @@ func (h *handler) CreatePosition(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	req.CreatedBy = "system" // replace with actual user
-	// req.CreatedAt = time.Now()
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
+	req.CreatedBy = user
 
 	if err := h.service.CreatePosition(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -58,9 +62,13 @@ func (h *handler) UpdatePosition(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	user, ok := c.Locals("employee_name").(string)
+	if !ok {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "need login"})
+	}
 	req.PositionID = id
-	req.UpdatedBy = "system" // replace with actual user
-	// req.UpdatedAt = time.Now()
+	req.UpdatedBy = user
 
 	if err := h.service.UpdatePosition(context.Background(), req); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
